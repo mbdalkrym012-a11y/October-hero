@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>بطل أكتوبر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&family=Lalezar&family=Reem+Kufi:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: one rounded sand-colored card per screen on a Nile-blue desert-dusk ground.
+   Gold ornament frames the start screen; each stage is a red ribbon banner over a framed scene. */
+:root{
+  --sand:#f6e3b4; --sand-deep:#e0b866; --nile:#0d3f6b; --nile-light:#2a86c6;
+  --red:#ce1126; --red-deep:#8b0b19; --gold:#c9a227; --gold-deep:#a8861a;
+  --ink:#2a1d10; --olive:#6b7a3a; --paper:#fffaf0;
+  --f-display:'Lalezar','Reem Kufi','Tahoma',sans-serif;
+  --f-kufi:'Reem Kufi','Tahoma',sans-serif;
+  --f-body:'Cairo','Tahoma',sans-serif;
+  color-scheme:light;
+}
+html,body{min-height:100%}
+body{
+  background:var(--nile);
+  background-image:linear-gradient(180deg,#0d3f6b 0%,#1b6fa8 55%,#e0b866 100%);
+  background-attachment:fixed;
+  color:var(--ink);font-family:var(--f-body);font-weight:600;
+  padding-inline:16px;padding-block:12px 28px;
+  -webkit-tap-highlight-color:transparent;
+}
+#app{max-width:940px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+*{box-sizing:border-box}
+button{font-family:inherit}
+:focus-visible{outline:4px solid #ffd23f;outline-offset:3px}
+
+/* HUD */
+#hud{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff}
+.dots{display:flex;gap:8px;align-items:center}
+.dot{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.22);color:#fff;font-family:var(--f-display);font-size:1.35rem;display:grid;place-items:center;border:3px solid transparent}
+.dot.on{background:var(--red);border-color:var(--gold)}
+.dot.done{background:var(--gold);color:var(--ink)}
+.hudlabel{font-family:var(--f-kufi);font-weight:700;font-size:1rem;opacity:.9}
+.mute{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.5);border-radius:999px;padding:6px 14px;font-weight:800;font-size:.95rem;cursor:pointer}
+
+/* Cards and common */
+.card{background:var(--sand);border:5px solid var(--gold);border-radius:26px;padding:14px 16px 18px;box-shadow:0 0 0 4px var(--red),0 14px 30px rgba(0,0,0,.35);position:relative}
+.orn{height:28px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='28' viewBox='0 0 36 28'%3E%3Cpath d='M18 2l3.2 7.6L29 6.8l-2.2 7.7L34 18l-7.6 1.8L24 27l-6-5-6 5-2.4-7.2L2 18l7.2-3.5L7 6.8l7.8 2.8z' fill='%23c9a227'/%3E%3Ccircle cx='18' cy='14' r='3' fill='%23ce1126'/%3E%3C/svg%3E") repeat-x center/auto 26px}
+.btn{font-family:var(--f-display);font-size:clamp(1.6rem,6vw,2.2rem);background:var(--red);color:#fff;border:4px solid var(--gold);border-radius:999px;padding:6px 44px 10px;cursor:pointer;box-shadow:0 6px 0 var(--red-deep);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--red-deep)}
+.banner{display:flex;align-items:center;justify-content:center;gap:12px;background:var(--red);color:#fff;font-family:var(--f-display);font-size:clamp(1.5rem,5.6vw,2.7rem);line-height:1.25;padding:8px 18px 12px;border:4px solid var(--gold);border-radius:16px;text-align:center;text-wrap:balance;box-shadow:0 5px 0 var(--red-deep)}
+.rep{flex:none;width:46px;height:46px;border-radius:50%;border:3px solid var(--gold);background:#fff;color:var(--red);font-size:1.3rem;cursor:pointer;display:grid;place-items:center}
+.board{border:5px solid var(--gold);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 10px 24px rgba(0,0,0,.3)}
+.board svg{display:block;width:100%;height:auto}
+.stage{display:flex;flex-direction:column;gap:12px}
+.under{display:flex;justify-content:center;min-height:64px}
+.tip{text-align:center;color:#fff;font-family:var(--f-kufi);font-weight:700;font-size:clamp(1.05rem,3.8vw,1.4rem);text-wrap:balance;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+
+/* Start screen */
+#s-start{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.heads{margin:0;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center}
+.l1{font-family:var(--f-kufi);font-weight:700;font-size:clamp(1.15rem,4.6vw,1.8rem);color:var(--nile);line-height:1.4}
+.l2{font-family:var(--f-kufi);font-weight:700;font-size:clamp(1.3rem,5.2vw,2.1rem);color:var(--red);line-height:1.4}
+.l3{font-family:var(--f-display);font-weight:400;font-size:clamp(3rem,15vw,5.6rem);line-height:1.15;color:var(--red);text-shadow:3px 3px 0 #ffd23f,5px 5px 0 var(--red-deep)}
+.fl{display:inline-block;width:.8em;height:.8em;vertical-align:-.06em;margin-inline:.03em;animation:sway 3.6s ease-in-out infinite;filter:drop-shadow(2px 2px 0 rgba(139,11,25,.7))}
+.emblems{display:flex;align-items:center;justify-content:center;gap:clamp(10px,4vw,34px)}
+.emblems .eg{width:clamp(76px,24vw,128px);height:auto}
+.emblems .wv{width:clamp(84px,25vw,140px);height:auto;overflow:visible}
+.quote{min-height:4.2em;display:grid;place-items:center;text-align:center;font-family:var(--f-kufi);font-weight:700;font-size:clamp(1.15rem,4.6vw,1.75rem);line-height:1.5;color:var(--ink);background:var(--paper);border:3px dashed var(--gold);border-radius:16px;padding:10px 14px;transition:opacity .4s;text-wrap:balance}
+.quote.fade{opacity:0}
+.namebox{display:flex;flex-direction:column;gap:6px;align-items:center}
+.namebox label{font-family:var(--f-kufi);font-weight:700;font-size:1.25rem;color:var(--nile)}
+.namebox input{width:min(100%,420px);font-family:var(--f-body);font-weight:800;font-size:1.5rem;text-align:center;padding:10px 14px;border:4px solid var(--nile-light);border-radius:16px;background:#fff;color:var(--ink)}
+.namebox input.err{border-color:var(--red);animation:shake .45s}
+.nameerr{min-height:1.5em;color:var(--red-deep);font-weight:800}
+.go{display:flex;justify-content:center}
+
+/* Stage 1 */
+.pieces{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;background:rgba(13,63,107,.55);padding:10px;border-radius:14px;border:3px solid var(--gold)}
+.pc{width:100%;height:auto;opacity:.28;filter:grayscale(1)}
+.pc.on{opacity:1;filter:none;animation:pop .6s}
+.piecelabel{text-align:center;color:#fff;font-family:var(--f-kufi);font-weight:700;font-size:1.05rem;margin-top:-4px}
+.qbox{background:var(--paper);border:4px solid var(--gold);border-radius:18px;padding:14px;text-align:center;font-family:var(--f-kufi);font-weight:700;font-size:clamp(1.3rem,5.4vw,2.1rem);line-height:1.45;text-wrap:balance;display:flex;flex-direction:column;gap:6px}
+.qnum{font-family:var(--f-body);font-size:1rem;color:var(--red);font-weight:800}
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ch{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:8px;background:#fff;border:4px solid var(--gold);border-radius:18px;padding:12px 6px;font-weight:800;font-size:clamp(1rem,3.9vw,1.55rem);line-height:1.3;color:var(--ink);cursor:pointer;box-shadow:0 5px 0 var(--gold-deep);min-height:150px;transition:transform .12s;text-wrap:balance}
+.ch:active{transform:translateY(3px)}
+.em{font-size:clamp(2.8rem,13vw,5.2rem);line-height:1.1}
+.sw{width:clamp(70px,22vw,120px);height:auto}
+.ch.right{background:#d9f5d0;border-color:#2e9b4f;animation:pop .5s}
+.ch.wrong{background:#ffe0dc;border-color:var(--red);animation:shake .45s}
+
+/* Stage 2 */
+#sc2{touch-action:none;user-select:none;-webkit-user-select:none}
+.slot{fill:rgba(255,255,255,.25);stroke:#fff;stroke-width:2;stroke-dasharray:6 5}
+.tp{cursor:grab;transition:transform .25s}
+.tp.drag{cursor:grabbing;transition:none}
+.pp{animation:drop .35s ease-out}
+#sold{cursor:grab}
+.arrow{animation:nudge 1s ease-in-out infinite}
+.wvg{animation:wavemove 2.4s linear infinite}
+
+/* Stage 3 */
+.seg{transform-box:fill-box;transform-origin:50% 100%}
+.pulse{transform-box:fill-box;transform-origin:center;animation:ping 1.3s ease-out infinite}
+.mk{cursor:pointer}
+.cnt{text-align:center;color:#fff;font-family:var(--f-display);font-size:1.7rem;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+
+/* Stage 4 */
+.flags{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;background:var(--paper);padding:16px;border:5px solid var(--gold);border-radius:20px}
+.fb{background:#fff;border:4px solid var(--gold);border-radius:16px;padding:10px;cursor:pointer;box-shadow:0 5px 0 var(--gold-deep)}
+.fb svg{width:100%;height:auto;display:block}
+.fb:active{transform:translateY(3px)}
+.fb.wrong{border-color:var(--red);background:#ffe0dc;animation:shake .45s}
+.hoist{position:relative;height:clamp(320px,64vh,470px);background:linear-gradient(180deg,#7cc4ee,#fbe7b0 78%,#e0b866 78%);border:5px solid var(--gold);border-radius:20px;overflow:hidden}
+.pole{position:absolute;left:28%;top:5%;bottom:0;width:12px;background:linear-gradient(90deg,#8a8a8a,#e8e8e8,#8a8a8a);border-radius:6px}
+.pole::before{content:"";position:absolute;left:-3px;top:-12px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe27a,var(--gold-deep))}
+.hflag{position:absolute;left:calc(28% + 10px);top:80%;width:clamp(170px,42vw,270px);height:auto;transition:top 3.6s ease-in-out;overflow:visible}
+.hflag.up{top:7%}
+.ground{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(180deg,#e0b866,#c9953f)}
+
+/* Certificate */
+#s-cert{display:flex;flex-direction:column;gap:14px;align-items:center}
+.cert{width:100%;background:var(--paper);border:8px double var(--gold);border-radius:12px;padding:12px 14px 18px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;outline:4px solid var(--red);outline-offset:-2px;box-shadow:0 14px 30px rgba(0,0,0,.4)}
+.cert .eg{width:clamp(56px,16vw,90px);height:auto}
+.cert .l3{font-size:clamp(2.6rem,12vw,4.6rem)}
+.cert .ttl{font-family:var(--f-kufi);font-weight:700;font-size:clamp(1.3rem,5vw,2rem);color:var(--nile)}
+.cert .who{font-family:var(--f-display);font-size:clamp(2.2rem,10vw,4rem);line-height:1.2;color:var(--ink);border-bottom:4px dotted var(--gold);padding-inline:20px;max-width:100%;overflow-wrap:anywhere}
+.cert p{margin:0;font-size:clamp(1rem,3.8vw,1.35rem);line-height:1.7;max-width:36em;text-wrap:balance}
+.cert ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-family:var(--f-kufi);font-weight:700;font-size:clamp(1.05rem,4vw,1.5rem);color:var(--red-deep)}
+.cert .foot{font-family:var(--f-kufi);font-weight:700;color:var(--nile);font-size:clamp(.95rem,3.4vw,1.2rem)}
+.hint{color:#fff;text-align:center;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+
+/* Overlay */
+#praise{position:fixed;inset:0;background:rgba(13,63,107,.78);display:grid;place-items:center;padding:20px;z-index:20}
+.pcard{background:var(--sand);border:6px solid var(--gold);border-radius:28px;box-shadow:0 0 0 5px var(--red);padding:22px 22px 26px;max-width:520px;width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;animation:pop .5s}
+.stars{font-family:var(--f-display);font-size:2.6rem;color:var(--gold);letter-spacing:.2em;text-shadow:0 3px 0 var(--gold-deep)}
+.ptxt{font-family:var(--f-display);font-size:clamp(1.8rem,7vw,2.8rem);line-height:1.3;color:var(--red);text-wrap:balance}
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:30}
+#confetti i{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;animation:fall linear forwards}
+
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes sway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@keyframes drop{from{transform:translateY(-16px);opacity:.4}to{transform:translateY(0);opacity:1}}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(12px)}}
+@keyframes wavemove{from{transform:translateX(0)}to{transform:translateX(-36px)}}
+@keyframes ping{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){.fl,.arrow,.wvg,.pulse{animation:none}}
+</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="pont" viewBox="0 0 64 28">
+      <path d="M2 12H62L58 26H6Z" fill="#4d5a28"/>
+      <rect x="0" y="4" width="64" height="10" rx="3" fill="#7d8c45"/>
+      <rect x="0" y="4" width="64" height="3" rx="1.5" fill="#a4b365"/>
+      <path d="M4 10H60" stroke="#4d5a28" stroke-width="1.2" stroke-dasharray="5 4"/>
+      <circle cx="8" cy="10" r="1.6" fill="#3a431d"/><circle cx="24" cy="10" r="1.6" fill="#3a431d"/>
+      <circle cx="40" cy="10" r="1.6" fill="#3a431d"/><circle cx="56" cy="10" r="1.6" fill="#3a431d"/>
+      <rect x="1" y="1" width="3" height="6" fill="#d9d26b"/><rect x="60" y="1" width="3" height="6" fill="#d9d26b"/>
+      <path d="M14 19H50" stroke="#3a431d" stroke-width="1.5" opacity=".55"/>
+    </symbol>
+    <symbol id="eagle" viewBox="0 0 100 100">
+      <defs><clipPath id="shc"><path d="M36 40H64V62Q64 76 50 82Q36 76 36 62Z"/></clipPath></defs>
+      <g id="wingL">
+        <path d="M49 42C34 28 16 32 5 48L11 50C12 57 19 60 24 59L26 66C32 68 38 64 40 60L44 64C48 61 50 56 50 50Z" fill="#c9a227" stroke="#8a6d12" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M12 50C22 44 32 46 44 52M14 57C24 52 32 54 42 59" stroke="#8a6d12" stroke-width="1.2" fill="none"/>
+      </g>
+      <use href="#wingL" transform="matrix(-1 0 0 1 100 0)"/>
+      <path d="M36 40H64V62Q64 76 50 82Q36 76 36 62Z" fill="#fff"/>
+      <g clip-path="url(#shc)"><rect x="36" y="40" width="28" height="14" fill="#ce1126"/><rect x="36" y="54" width="28" height="14" fill="#fff"/><rect x="36" y="68" width="28" height="14" fill="#111"/></g>
+      <path d="M36 40H64V62Q64 76 50 82Q36 76 36 62Z" fill="none" stroke="#8a6d12" stroke-width="2"/>
+      <circle cx="50" cy="30" r="8" fill="#c9a227" stroke="#8a6d12" stroke-width="1.2"/>
+      <path d="M44 29L36 32L44 35Z" fill="#8a6d12"/>
+      <circle cx="48" cy="28" r="1.5" fill="#2a1d10"/>
+      <path d="M26 86Q50 94 74 86L74 91Q50 99 26 91Z" fill="#c9a227" stroke="#8a6d12" stroke-width="1"/>
+    </symbol>
+    <symbol id="flower" viewBox="0 0 40 40">
+      <g transform="translate(20 20)">
+        <ellipse rx="6" ry="10" cy="-10" fill="#ff5c8a"/>
+        <ellipse rx="6" ry="10" cy="-10" fill="#ff7aa2" transform="rotate(72)"/>
+        <ellipse rx="6" ry="10" cy="-10" fill="#ff5c8a" transform="rotate(144)"/>
+        <ellipse rx="6" ry="10" cy="-10" fill="#ff7aa2" transform="rotate(216)"/>
+        <ellipse rx="6" ry="10" cy="-10" fill="#ff5c8a" transform="rotate(288)"/>
+        <circle r="5.5" fill="#ffd23f" stroke="#e09b00" stroke-width="1.5"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="app" dir="rtl" lang="ar">
+
+  <div id="hud" hidden>
+    <div class="dots" role="list">
+      <span class="dot" role="listitem">١</span><span class="dot" role="listitem">٢</span><span class="dot" role="listitem">٣</span><span class="dot" role="listitem">٤</span>
+    </div>
+    <span class="hudlabel" id="hudlabel"></span>
+    <button class="mute" id="mute" type="button">الصوت: شغال</button>
+  </div>
+
+  <!-- START -->
+  <section id="s-start" class="card screen">
+    <div class="orn"></div>
+    <h1 class="heads">
+      <span class="l1">إدارة غرب المنصورة</span>
+      <span class="l2">مدرسة خالد بن الوليد</span>
+      <span class="l3">قاعة الز<svg class="fl" viewBox="0 0 40 40" aria-hidden="true"><use href="#flower"/></svg>ور</span>
+    </h1>
+    <div class="emblems" aria-hidden="true">
+      <svg class="wv" id="wvA"></svg>
+      <svg class="eg" viewBox="0 0 100 100"><use href="#eagle" width="100" height="100"/></svg>
+      <svg class="wv" id="wvB"></svg>
+    </div>
+    <p class="quote" id="quote" aria-live="polite"></p>
+    <div class="namebox">
+      <label for="name">اسم البطل</label>
+      <input id="name" type="text" maxlength="24" placeholder="اكتب اسمك هنا يا بطل" autocomplete="off">
+      <div class="nameerr" id="nameerr"></div>
+    </div>
+    <div class="go"><button class="btn" id="go" type="button">ابدأ</button></div>
+    <div class="orn"></div>
+  </section>
+
+  <!-- STAGE 1 -->
+  <section id="s-q" class="stage" hidden>
+    <div class="banner"><span id="b1">يلا يا بطل نجمع قطع الجسر</span><button class="rep" id="rep1" type="button" aria-label="اسمع تاني">↻</button></div>
+    <div class="pieces" id="pieces1"></div>
+    <div class="piecelabel" id="pieceLabel"></div>
+    <div class="qbox"><span class="qnum" id="qnum"></span><span id="qtext"></span></div>
+    <div class="choices" id="choices"></div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section id="s-bridge" class="stage" hidden>
+    <div class="banner"><span>ساعد الجندي لعبور القناة</span><button class="rep" id="rep2" type="button" aria-label="اسمع تاني">↻</button></div>
+    <div class="board">
+      <svg id="sc2" viewBox="0 0 640 420" role="img" aria-label="قناة وجسر من القطع وجندي على الضفة الشرقية">
+        <defs>
+          <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc4ee"/><stop offset="1" stop-color="#fbe7b0"/></linearGradient>
+          <linearGradient id="wat2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b9ad9"/><stop offset="1" stop-color="#0d5a9a"/></linearGradient>
+          <clipPath id="clipW"><rect x="128" y="270" width="384" height="150"/></clipPath>
+        </defs>
+        <rect width="640" height="420" fill="url(#sky2)"/>
+        <circle cx="90" cy="60" r="30" fill="#ffd966"/>
+        <path d="M0 270Q70 215 150 270Z" fill="#e8c27a"/><path d="M470 270Q560 200 640 270Z" fill="#e8c27a"/>
+        <rect x="128" y="270" width="384" height="150" fill="url(#wat2)"/>
+        <g clip-path="url(#clipW)"><g class="wvg" id="wvg2"></g></g>
+        <path d="M0 270H128V420H0Z" fill="#e0b866"/><path d="M0 270H128V278H0Z" fill="#c9953f"/>
+        <path d="M512 270H640V420H512Z" fill="#e0b866"/><path d="M512 270H640V278H512Z" fill="#c9953f"/>
+        <text x="64" y="316" text-anchor="middle" font-family="Cairo,Tahoma,sans-serif" font-weight="800" font-size="14" fill="#6a4a1a" direction="rtl">الضفة الغربية</text>
+        <text x="576" y="316" text-anchor="middle" font-family="Cairo,Tahoma,sans-serif" font-weight="800" font-size="14" fill="#6a4a1a" direction="rtl">الضفة الشرقية</text>
+        <g id="goal2"><path d="M28 270V196" stroke="#6b6b6b" stroke-width="3"/><g transform="translate(30 197)"><rect width="38" height="8" fill="#ce1126"/><rect y="8" width="38" height="8" fill="#fff"/><rect y="16" width="38" height="8" fill="#111"/></g></g>
+        <g id="slots2"></g>
+        <g id="placed2"></g>
+        <rect x="40" y="330" width="560" height="80" rx="14" fill="rgba(13,63,107,.45)" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>
+        <g id="tray2"></g>
+        <g id="traj2"></g>
+        <g id="hint2" hidden><path class="arrow" d="M612 220h-4m4 0h0" stroke="none"/><g class="arrow"><path d="M600 232h36m-12-12l12 12l-12 12" stroke="#ce1126" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+        <g id="bubwrap">
+          <polygon points="555,128 592,128 584,162" fill="#fff" stroke="#2a1d10" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="410" y="48" width="220" height="82" rx="14" fill="#fff" stroke="#2a1d10" stroke-width="2.5"/>
+          <rect x="558" y="125" width="32" height="7" fill="#fff"/>
+          <text id="bub1" x="520" y="84" text-anchor="middle" direction="rtl" font-family="Cairo,Tahoma,sans-serif" font-weight="800" font-size="19" fill="#2a1d10"></text>
+          <text id="bub2" x="520" y="112" text-anchor="middle" direction="rtl" font-family="Cairo,Tahoma,sans-serif" font-weight="800" font-size="19" fill="#ce1126"></text>
+        </g>
+        <g id="sold" style="transform:translate(580px,270px)">
+          <rect x="-34" y="-104" width="68" height="106" fill="transparent"/>
+          <rect x="-12" y="-28" width="9" height="28" rx="3" fill="#4d5a28"/><rect x="3" y="-28" width="9" height="28" rx="3" fill="#4d5a28"/>
+          <rect x="-14" y="-6" width="12" height="6" rx="2" fill="#1d1a16"/><rect x="2" y="-6" width="12" height="6" rx="2" fill="#1d1a16"/>
+          <rect x="-24" y="-62" width="9" height="30" rx="4" fill="#6b7a3a"/><rect x="15" y="-62" width="9" height="30" rx="4" fill="#6b7a3a"/>
+          <circle cx="-20" cy="-30" r="5" fill="#e0ac7a"/><circle cx="20" cy="-30" r="5" fill="#e0ac7a"/>
+          <rect x="-16" y="-64" width="32" height="38" rx="9" fill="#6b7a3a"/>
+          <rect x="-16" y="-40" width="32" height="5" fill="#3a2f1a"/><rect x="-3" y="-41" width="6" height="7" fill="#c9a227"/>
+          <circle cx="0" cy="-76" r="12" fill="#e0ac7a"/>
+          <path d="M-14 -78Q0 -98 14 -78Z" fill="#5a6a2e"/><rect x="-16" y="-80" width="32" height="4" rx="2" fill="#4a5826"/>
+          <circle cx="0" cy="-86" r="2.6" fill="#c9a227"/>
+          <circle cx="-4.5" cy="-74" r="1.8" fill="#2a1d10"/><circle cx="4.5" cy="-74" r="1.8" fill="#2a1d10"/>
+          <path d="M-4 -69Q0 -65 4 -69" stroke="#2a1d10" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
+    <div class="tip" id="tip2">اسحب قطع الجسر وحطها على الماية</div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section id="s-wall" class="stage" hidden>
+    <div class="banner"><span>دمّر الساتر الترابي</span><button class="rep" id="rep3" type="button" aria-label="اسمع تاني">↻</button></div>
+    <div class="cnt" id="cnt3"></div>
+    <div class="board">
+      <svg id="sc3" viewBox="0 0 640 420" role="img" aria-label="ساتر ترابي كبير عليه ست علامات">
+        <defs>
+          <linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc4ee"/><stop offset="1" stop-color="#fbe7b0"/></linearGradient>
+          <linearGradient id="sandg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcae62"/><stop offset="1" stop-color="#bd8a3f"/></linearGradient>
+        </defs>
+        <rect width="640" height="420" fill="url(#sky3)"/>
+        <circle cx="560" cy="52" r="28" fill="#ffd966"/>
+        <rect y="335" width="640" height="85" fill="#e8c27a"/>
+        <g id="quote3" font-family="Lalezar,Tahoma,sans-serif" text-anchor="middle" direction="rtl">
+          <rect x="176" y="150" width="416" height="130" rx="18" fill="#0d3f6b"/>
+          <text x="384" y="208" font-size="46" fill="#ffd23f">٦ أكتوبر ١٩٧٣</text>
+          <text x="384" y="260" font-size="40" fill="#fff">يوم النصر العظيم!</text>
+        </g>
+        <g id="segs3"></g>
+        <g id="holes3"></g>
+        <g id="marks3"></g>
+        <g id="dust3"></g>
+        <g id="cannon">
+          <rect x="8" y="312" width="64" height="30" rx="6" fill="#2a86c6"/>
+          <rect x="44" y="300" width="28" height="22" rx="4" fill="#1b6fa8"/>
+          <rect x="50" y="304" width="16" height="10" rx="2" fill="#bfe4f7"/>
+          <circle cx="24" cy="346" r="10" fill="#2a1d10"/><circle cx="58" cy="346" r="10" fill="#2a1d10"/>
+          <circle cx="24" cy="346" r="4" fill="#bbb"/><circle cx="58" cy="346" r="4" fill="#bbb"/>
+          <g id="tube"><rect x="62" y="320" width="44" height="8" rx="3" fill="#555"/><rect x="100" y="318" width="10" height="12" rx="2" fill="#333"/></g>
+          <circle cx="62" cy="324" r="9" fill="#777"/>
+        </g>
+        <g id="jets3"></g>
+      </svg>
+    </div>
+    <div class="under"><button class="btn" id="n3" type="button" hidden>كمّل يا بطل</button></div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section id="s-flag" class="stage" hidden>
+    <div class="banner"><span>ارفع علم مصر</span><button class="rep" id="rep4" type="button" aria-label="اسمع تاني">↻</button></div>
+    <div class="tip" id="tip4">علم مصر: الأحمر فوق، والأبيض في النص، والأسود تحت</div>
+    <div class="flags" id="flags4"></div>
+    <div class="hoist" id="hoist4" hidden>
+      <div class="pole"></div>
+      <svg class="hflag" id="hflag" aria-label="علم مصر"></svg>
+      <div class="ground"></div>
+    </div>
+    <div class="under"><button class="btn" id="n4" type="button" hidden>شهادتي</button></div>
+  </section>
+
+  <!-- CERTIFICATE -->
+  <section id="s-cert" hidden>
+    <div class="cert" id="cert">
+      <div class="orn" style="width:100%"></div>
+      <svg class="eg" viewBox="0 0 100 100" aria-hidden="true"><use href="#eagle" width="100" height="100"/></svg>
+      <span class="l3">قاعة الز<svg class="fl" viewBox="0 0 40 40" aria-hidden="true"><use href="#flower"/></svg>ور</span>
+      <span class="ttl">شهادة تقدير</span>
+      <p>تهدي قاعة الزهور هذه الشهادة إلى البطل الصغير</p>
+      <div class="who" id="certName"></div>
+      <p>تقديرًا لشجاعته في جمع قطع الجسر، وعبور القناة، وتدمير الساتر الترابي، ورفع علم مصر.</p>
+      <ul>
+        <li>في ٦ أكتوبر ١٩٧٣ عبر جنود مصر القناة وانتصروا</li>
+        <li>بالإيمان والعزيمة تتحقق الانتصارات</li>
+        <li>تحيا مصر.. تحيا مصر.. تحيا مصر</li>
+      </ul>
+      <span class="foot">إدارة غرب المنصورة · مدرسة خالد بن الوليد</span>
+      <div class="orn" style="width:100%"></div>
+    </div>
+    <div class="hint">صوّر الشهادة بالموبايل علشان تحتفظ بيها</div>
+    <button class="btn" id="again" type="button">العب تاني</button>
+  </section>
+</div>
+
+<div id="praise" hidden>
+  <div class="pcard" role="dialog" aria-live="assertive">
+    <div class="stars" aria-hidden="true">★★★</div>
+    <div class="ptxt" id="pTxt"></div>
+    <button class="btn" id="pBtn" type="button">كمّل يا بطل</button>
+  </div>
+</div>
+<div id="confetti" aria-hidden="true"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var NS='http://www.w3.org/2000/svg';
+var sleep=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+var ar=function(n){return String(n).replace(/\d/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d]})};
+var rnd=function(a){return a[Math.floor(Math.random()*a.length)]};
+var shuffle=function(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a};
+var player='';
+var EG=['#ce1126','#ffffff','#111111'];
+
+/* ---------- sound ---------- */
+var muted=false, voice=null, AC=null;
+function pickVoice(){
+  if(!('speechSynthesis' in window))return;
+  var vs=speechSynthesis.getVoices();
+  voice=vs.find(function(v){return /^ar[-_]EG/i.test(v.lang)})||vs.find(function(v){return /^ar/i.test(v.lang)})||null;
+}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function say(text){
+  return new Promise(function(res){
+    if(muted||!('speechSynthesis' in window)){setTimeout(res,Math.min(2400,500+text.length*55));return}
+    try{
+      speechSynthesis.cancel();
+      var u=new SpeechSynthesisUtterance(text);
+      u.lang='ar-EG';if(voice)u.voice=voice;u.rate=.9;u.pitch=.7;
+      var done=false,tm=null;
+      var fin=function(){if(!done){done=true;clearTimeout(tm);res()}};
+      u.onend=fin;u.onerror=fin;
+      tm=setTimeout(fin,text.length*150+2500);
+      speechSynthesis.speak(u);
+    }catch(e){res()}
+  });
+}
+function stopSpeech(){try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}}
+function ac(){
+  if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+  if(AC&&AC.state==='suspended')AC.resume();
+  return AC;
+}
+function tone(f,d,type,v,delay){
+  if(muted)return;var a=ac();if(!a)return;
+  d=d||.18;v=v||.15;delay=delay||0;
+  var t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();
+  o.type=type||'sine';o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.05);
+}
+function noise(d,f,v,delay){
+  if(muted)return;var a=ac();if(!a)return;
+  var n=Math.floor(a.sampleRate*d),b=a.createBuffer(1,n,a.sampleRate),c=b.getChannelData(0);
+  for(var i=0;i<n;i++)c[i]=(Math.random()*2-1)*(1-i/n);
+  var s=a.createBufferSource();s.buffer=b;
+  var fl=a.createBiquadFilter();fl.type='lowpass';fl.frequency.value=f;
+  var g=a.createGain();g.gain.value=v;
+  s.connect(fl);fl.connect(g);g.connect(a.destination);s.start(a.currentTime+(delay||0));
+}
+var sfx={
+  ok:function(){tone(660,.14,'triangle',.16);tone(880,.22,'triangle',.16,.12)},
+  bad:function(){tone(180,.28,'sawtooth',.09)},
+  hop:function(){tone(420+Math.random()*90,.12,'square',.06)},
+  place:function(){tone(300,.1,'square',.07);noise(.18,1800,.14)},
+  splash:function(){noise(.4,2600,.22)},
+  boom:function(){noise(1.5,380,.5);tone(70,.9,'sine',.3)},
+  fanfare:function(){[523,659,784,1047].forEach(function(f,i){tone(f,.28,'triangle',.17,i*.16)});tone(1047,.7,'triangle',.17,.7)},
+  rise:function(){for(var i=0;i<8;i++)tone(300+i*70,.5,'triangle',.08,i*.4)}
+};
+$('#mute').addEventListener('click',function(){
+  muted=!muted;this.textContent=muted?'الصوت: مقفول':'الصوت: شغال';
+  if(muted)stopSpeech();
+});
+
+/* ---------- waving flag ---------- */
+var waves=[];
+function mkWave(svg,w,h,order,amp,pole){
+  var pad=amp+8;
+  svg.setAttribute('viewBox','-6 '+(-pad)+' '+(w+12)+' '+(h+pad*2));
+  svg.innerHTML='';
+  var o={svg:svg,w:w,h:h,amp:amp,ps:[]};
+  if(pole){var r=document.createElementNS(NS,'rect');r.setAttribute('x',-6);r.setAttribute('y',-pad);r.setAttribute('width',6);r.setAttribute('height',h+pad*2);r.setAttribute('rx',3);r.setAttribute('fill','#b08a1e');svg.appendChild(r)}
+  order.forEach(function(c){var p=document.createElementNS(NS,'path');p.setAttribute('fill',c);svg.appendChild(p);o.ps.push(p)});
+  o.es=h*.38;
+  o.e=document.createElementNS(NS,'use');o.e.setAttribute('href','#eagle');o.e.setAttribute('width',o.es);o.e.setAttribute('height',o.es);
+  svg.appendChild(o.e);
+  var sh=document.createElementNS(NS,'path');sh.setAttribute('fill','none');sh.setAttribute('stroke','rgba(0,0,0,.18)');sh.setAttribute('stroke-width','1');svg.appendChild(sh);o.sh=sh;
+  waves.push(o);draw(o,0);return o;
+}
+function draw(o,t){
+  var N=24,w=o.w,h=o.h,amp=o.amp;
+  function wy(x){return amp*Math.sin(x*.045-t*4)*(.12+.88*x/w)}
+  for(var s=0;s<3;s++){
+    var d='';
+    for(var i=0;i<=N;i++){var x=i*w/N;d+=(i?'L':'M')+x.toFixed(1)+' '+(s*h/3+wy(x)).toFixed(1)}
+    for(var j=N;j>=0;j--){var x2=j*w/N;d+='L'+x2.toFixed(1)+' '+((s+1)*h/3+wy(x2)+(s<2?.8:0)).toFixed(1)}
+    o.ps[s].setAttribute('d',d+'Z');
+  }
+  o.e.setAttribute('x',(w/2-o.es/2).toFixed(1));
+  o.e.setAttribute('y',(h/2+wy(w/2)-o.es/2).toFixed(1));
+  var od='';for(var k=0;k<=N;k++){var xx=k*w/N;od+=(k?'L':'M')+xx.toFixed(1)+' '+(h+wy(xx)).toFixed(1)}
+  o.sh.setAttribute('d',od);
+}
+function loop(ms){
+  var t=ms/1000;
+  for(var i=0;i<waves.length;i++){var o=waves[i];if(o.svg.isConnected&&o.svg.getClientRects().length)draw(o,t)}
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---------- screens ---------- */
+var KEYS={0:'start',1:'q',2:'bridge',3:'wall',4:'flag',5:'cert'};
+var LABELS={1:'المرحلة الأولى',2:'المرحلة التانية',3:'المرحلة التالتة',4:'المرحلة الرابعة'};
+function go(n){
+  Object.keys(KEYS).forEach(function(k){$('#s-'+KEYS[k]).hidden=true});
+  $('#s-'+KEYS[n]).hidden=false;
+  $('#hud').hidden=!(n>=1&&n<=4);
+  $('#hudlabel').textContent=LABELS[n]||'';
+  document.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('on',i+1===n);d.classList.toggle('done',i+1<n)});
+  window.scrollTo(0,0);
+}
+function praise(text,label){
+  return new Promise(function(res){
+    $('#pTxt').textContent=text;
+    var b=$('#pBtn');b.textContent=label||'كمّل يا بطل';
+    $('#praise').hidden=false;sfx.fanfare();say(text);
+    b.onclick=function(){$('#praise').hidden=true;stopSpeech();res()};
+    b.focus();
+  });
+}
+function svgPt(svg,e){var p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+function anim(dur,fn){
+  return new Promise(function(res){
+    var t0=performance.now();
+    (function step(now){var t=Math.min(1,(now-t0)/dur);fn(t);if(t<1)requestAnimationFrame(step);else res()})(t0);
+  });
+}
+
+/* ---------- start screen ---------- */
+var QUOTES=[
+  'يوم ٦ أكتوبر.. يوم النصر العظيم!',
+  'أبطال مصر عبروا القناة وانتصروا',
+  'تحيا مصر! تحيا مصر! تحيا مصر!',
+  'جيش مصر العظيم رفع رأسنا عالي',
+  'بالإيمان والعزيمة بنحقق النصر',
+  'مصر بلد الأبطال.. وإنت بطل صغير',
+  'علم مصر بيرفرف عالي في السما'
+];
+var qIdx=Math.floor(Math.random()*QUOTES.length);
+function showQuote(){
+  var q=$('#quote');q.textContent=QUOTES[qIdx%QUOTES.length];
+}
+showQuote();
+setInterval(function(){
+  if($('#s-start').hidden)return;
+  var q=$('#quote');q.classList.add('fade');
+  setTimeout(function(){qIdx++;showQuote();q.classList.remove('fade')},400);
+},3000);
+mkWave($('#wvA'),120,80,EG,7,true);
+mkWave($('#wvB'),120,80,EG,7,true);
+
+function startGame(){
+  var v=$('#name').value.trim();
+  if(!v){
+    $('#nameerr').textContent='اكتب اسمك الأول يا بطل';
+    var i=$('#name');i.classList.remove('err');void i.offsetWidth;i.classList.add('err');i.focus();return;
+  }
+  $('#nameerr').textContent='';
+  player=v;ac();
+  try{if('speechSynthesis' in window){var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}}catch(e){}
+  runS1();
+}
+$('#go').addEventListener('click',startGame);
+$('#name').addEventListener('keydown',function(e){if(e.key==='Enter')startGame()});
+
+/* ---------- stage 1: questions ---------- */
+var SW=function(c){return '<svg class="sw" viewBox="0 0 90 60" aria-hidden="true">'+c.map(function(x,i){return '<rect y="'+(i*60/c.length)+'" width="90" height="'+(60/c.length+.5)+'" fill="'+x+'"/>'}).join('')+'<rect width="90" height="60" fill="none" stroke="#2a1d10" stroke-opacity=".3" stroke-width="2"/></svg>'};
+var E=function(e){return '<span class="em" aria-hidden="true">'+e+'</span>'};
+var QS=[
+  {q:'مين اللي بيحمي بلدنا ويدافع عنها؟',a:[['الجندي',E('🪖'),1],['المهرج',E('🤡')],['الطباخ',E('👨‍🍳')]]},
+  {q:'إيه الطائر اللي موجود على علم مصر؟',a:[['النسر',E('🦅'),1],['البطة',E('🦆')],['الفراشة',E('🦋')]]},
+  {q:'إحنا عدّينا إيه في حرب أكتوبر؟',a:[['القناة',E('🌊'),1],['الغابة',E('🌳')],['الجبل',E('⛰️')]]},
+  {q:'بنينا إيه علشان الدبابات تعدّي القناة؟',a:[['جسر',E('🌉'),1],['بيت',E('🏠')],['قلعة',E('🏰')]]},
+  {q:'المصريين حسّوا بإيه لما انتصروا؟',a:[['فرحانين',E('😄'),1],['زعلانين',E('😢')],['خايفين',E('😨')]]},
+  {q:'إيه ألوان علم مصر؟',a:[['أحمر وأبيض وأسود',SW(EG),1],['أخضر وأصفر',SW(['#2e9b4f','#f4d03f'])],['أزرق وأبيض',SW(['#2a86c6','#ffffff'])]]}
+];
+var LINES={
+  1:'يلا يا بطل نجمع قطع الجسر',
+  2:'ساعد الجندي لعبور القناة',
+  3:'دمّر الساتر الترابي',
+  4:'ارفع علم مصر'
+};
+var OKS=['برافو عليك!','أحسنت يا بطل!','ممتاز، إجابة صح!','شاطر أوي!'];
+var qi=0,earned=0,qToken=0,locked=false;
+
+function buildPieces(){
+  var box=$('#pieces1');box.innerHTML='';
+  for(var i=0;i<6;i++){box.insertAdjacentHTML('beforeend','<svg class="pc" viewBox="0 0 64 28" aria-hidden="true"><use href="#pont" width="64" height="28"/></svg>')}
+  updPieceLabel();
+}
+function updPieceLabel(){$('#pieceLabel').textContent='قطع الجسر: '+ar(earned)+' من ٦'}
+async function runS1(){
+  qi=0;earned=0;go(1);buildPieces();
+  $('#choices').innerHTML='';$('#qtext').textContent='';$('#qnum').textContent='';
+  await say(LINES[1]);
+  nextQ();
+}
+async function nextQ(){
+  if(qi>=QS.length){return endS1()}
+  var Q=QS[qi],t=++qToken;locked=false;
+  $('#qnum').textContent='سؤال '+ar(qi+1)+' من ٦';
+  $('#qtext').textContent=Q.q;
+  var box=$('#choices');box.innerHTML='';
+  shuffle(Q.a).forEach(function(a){
+    var b=document.createElement('button');b.type='button';b.className='ch';
+    b.innerHTML=a[1]+'<span>'+a[0]+'</span>';
+    b.addEventListener('click',function(){pick(b,!!a[2])});
+    box.appendChild(b);
+  });
+  await say(Q.q);
+  if(t!==qToken)return;
+  var names=Array.prototype.map.call(box.children,function(b){return b.querySelector('span:last-child').textContent});
+  await say(names.join('، ولا '));
+}
+async function pick(btn,ok){
+  if(locked)return;
+  qToken++;stopSpeech();
+  if(ok){
+    locked=true;btn.classList.add('right');sfx.ok();
+    var pcs=document.querySelectorAll('#pieces1 .pc');
+    if(pcs[earned])pcs[earned].classList.add('on');
+    earned++;updPieceLabel();
+    await Promise.all([say(rnd(OKS)),sleep(1100)]);
+    qi++;nextQ();
+  }else{
+    btn.classList.add('wrong');sfx.bad();say('لأ، جرّب تاني يا بطل');
+    setTimeout(function(){btn.classList.remove('wrong')},600);
+  }
+}
+async function endS1(){
+  await praise('برافو يا '+player+'! جمعت كل قطع الجسر!');
+  runS2();
+}
+$('#rep1').addEventListener('click',function(){
+  var Q=QS[Math.min(qi,QS.length-1)];
+  if(qi>=QS.length||!$('#choices').children.length){say(LINES[1]);return}
+  qToken++;var t=qToken;say(Q.q).then(function(){});
+});
+
+/* ---------- stage 2: bridge + launch ---------- */
+var S2={filled:[],placed:0,phase:'build'};
+var AX=580,AY=270;
+function addWaves(){
+  var g=$('#wvg2');if(g.firstChild)return;
+  for(var r=0;r<5;r++){
+    var y=290+r*28,d='M92 '+y;
+    for(var k=0;k<14;k++)d+=' q9 -6 18 0 t18 0';
+    var p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke','rgba(255,255,255,.35)');p.setAttribute('stroke-width','2');
+    p.setAttribute('transform','translate('+(r%2?-18:0)+' 0)');g.appendChild(p);
+  }
+}
+function setBubble(a,b){$('#bub1').textContent=a;$('#bub2').textContent=b}
+function initS2(){
+  addWaves();
+  var svg=$('#sc2');
+  var gs=$('#slots2'),gp=$('#placed2'),gt=$('#tray2');
+  gs.innerHTML='';gp.innerHTML='';gt.innerHTML='';$('#traj2').innerHTML='';
+  S2.filled=[false,false,false,false,false,false];S2.placed=0;S2.phase='build';
+  $('#hint2').hidden=true;$('#bubwrap').style.display='';
+  $('#sold').style.transform='translate('+AX+'px,'+AY+'px)';
+  setBubble('ساعدني يا بطل','أعدّي الناحية التانية');
+  $('#tip2').textContent='اسحب قطع الجسر وحطها على الماية';
+  for(var i=0;i<6;i++){
+    var slot=document.createElementNS(NS,'rect');
+    slot.setAttribute('class','slot');slot.setAttribute('x',128+64*i+2);slot.setAttribute('y',268);slot.setAttribute('width',60);slot.setAttribute('height',28);slot.setAttribute('rx',5);
+    gs.appendChild(slot);
+    var g=document.createElementNS(NS,'g');g.setAttribute('class','tp');
+    var hx=62+i*92,hy=352;
+    g.innerHTML='<rect x="-14" y="-12" width="92" height="52" fill="transparent"/><use href="#pont" width="64" height="28"/>';
+    g.style.transform='translate('+hx+'px,'+hy+'px)';
+    gt.appendChild(g);bindTray(svg,g,hx,hy);
+  }
+}
+function bindTray(svg,g,hx,hy){
+  g.addEventListener('pointerdown',function(e){
+    if(S2.phase!=='build'||g.dataset.done)return;
+    e.preventDefault();
+    try{g.setPointerCapture(e.pointerId)}catch(_){}
+    var p0=svgPt(svg,e),moved=false;
+    g.parentNode.appendChild(g);g.classList.add('drag');
+    function mv(ev){
+      var p=svgPt(svg,ev),dx=p.x-p0.x,dy=p.y-p0.y;
+      if(Math.hypot(dx,dy)>8)moved=true;
+      g.style.transform='translate('+(hx+dx)+'px,'+(hy+dy)+'px)';
+    }
+    function up(ev){
+      g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);
+      g.classList.remove('drag');
+      var p=svgPt(svg,ev);
+      if(ev.type==='pointercancel'){g.style.transform='translate('+hx+'px,'+hy+'px)';return}
+      if(!moved)place(g,null);
+      else if(p.y<325)place(g,p.x);
+      else g.style.transform='translate('+hx+'px,'+hy+'px)';
+    }
+    g.addEventListener('pointermove',mv);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up);
+  });
+}
+function place(g,x){
+  var idx=-1,best=1e9,i;
+  if(x===null){for(i=5;i>=0;i--){if(!S2.filled[i]){idx=i;break}}}
+  else{for(i=0;i<6;i++){if(S2.filled[i])continue;var d=Math.abs(x-(160+64*i));if(d<best){best=d;idx=i}}}
+  if(idx<0)return;
+  S2.filled[idx]=true;S2.placed++;g.dataset.done='1';g.style.display='none';
+  var u=document.createElementNS(NS,'use');
+  u.setAttribute('href','#pont');u.setAttribute('class','pp');
+  u.setAttribute('x',128+64*idx);u.setAttribute('y',266);u.setAttribute('width',64);u.setAttribute('height',28);
+  $('#placed2').appendChild(u);sfx.place();
+  var left=6-S2.placed;
+  $('#tip2').textContent=left?('فاضل '+ar(left)+(left>2?' قطع':left===2?' قطعتين':' قطعة')):'';
+  if(S2.placed===6)bridgeReady();
+}
+async function bridgeReady(){
+  S2.phase='launch';
+  setBubble('اسحبني لورا','وسيبني!');
+  $('#hint2').hidden=false;
+  $('#tip2').textContent='اسحب الجندي ناحية اليمين وسيبه';
+  sfx.ok();
+  await say('الجسر جاهز! اسحبني لورا وسيبني');
+}
+(function bindSoldier(){
+  var sold=$('#sold'),svg=$('#sc2'),pull=null;
+  function clampPull(e){
+    var p=svgPt(svg,e),dx=p.x-AX,dy=p.y-AY;
+    dx=Math.max(-6,dx);dy=Math.max(-30,Math.min(40,dy));
+    var L=Math.hypot(dx,dy);if(L>80){dx=dx/L*80;dy=dy/L*80}
+    return {dx:dx,dy:dy};
+  }
+  function traj(dx,dy){
+    var g=$('#traj2');g.innerHTML='';
+    var s=Math.hypot(dx,dy);if(s<10)return;
+    for(var k=1;k<=8;k++){
+      var t=k/9,x=AX+dx-t*(120+s*1.5),y=AY+dy-30-4*(50+s*.6)*t*(1-t)+t*30;
+      var c=document.createElementNS(NS,'circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',4.5-k*.25);c.setAttribute('fill','#ce1126');c.setAttribute('opacity',1-k*.08);g.appendChild(c);
+    }
+  }
+  sold.addEventListener('pointerdown',function(e){
+    if(S2.phase!=='launch')return;
+    e.preventDefault();try{sold.setPointerCapture(e.pointerId)}catch(_){}
+    pull={dx:0,dy:0};$('#hint2').hidden=true;
+  });
+  sold.addEventListener('pointermove',function(e){
+    if(!pull)return;
+    pull=clampPull(e);
+    sold.style.transform='translate('+(AX+pull.dx)+'px,'+(AY+pull.dy)+'px)';
+    traj(pull.dx,pull.dy);
+  });
+  function release(e){
+    if(!pull)return;
+    var p=pull;pull=null;$('#traj2').innerHTML='';
+    if(e.type!=='pointercancel'&&p.dx>=24)launch(p);
+    else{
+      sold.style.transform='translate('+AX+'px,'+AY+'px)';
+      $('#hint2').hidden=false;
+      $('#tip2').textContent='اسحبه لورا أكتر ناحية اليمين وسيبه';
+    }
+  }
+  sold.addEventListener('pointerup',release);
+  sold.addEventListener('pointercancel',release);
+})();
+function hop(el,x0,y0,x1,y1,h,dur){
+  return anim(dur,function(t){
+    var x=x0+(x1-x0)*t,y=y0+(y1-y0)*t-4*h*t*(1-t);
+    el.style.transform='translate('+x+'px,'+y+'px)';
+  }).then(function(){sfx.hop()});
+}
+async function launch(p){
+  S2.phase='fly';
+  var sold=$('#sold'),s=Math.hypot(p.dx,p.dy);
+  $('#bubwrap').style.display='none';$('#tip2').textContent='';
+  var x=AX+p.dx,y=AY+p.dy;
+  await hop(sold,x,y,480,268,70+s*.5,520);x=480;y=268;
+  for(var i=4;i>=0;i--){var nx=160+64*i;await hop(sold,x,y,nx,268,22,240);x=nx}
+  await hop(sold,x,y,78,270,50,420);
+  S2.phase='done';sfx.ok();
+  await praise('أحسنت يا بطل! الجندي عدّى القناة!');
+  runS3();
+}
+
+/* ---------- stage 3: sand wall ---------- */
+var S3={hit:null,done:false};
+var TOPS=[112,98,121,95,118,102,115];
+var TARGETS=[[205,150],[320,205],[430,140],[540,215],[255,285],[500,290]];
+function runS3(){
+  go(3);initS3();
+  say(LINES[3]);
+}
+function initS3(){
+  S3.hit=new Set();S3.done=false;
+  var segs=$('#segs3'),holes=$('#holes3'),marks=$('#marks3');
+  segs.innerHTML='';holes.innerHTML='';marks.innerHTML='';$('#dust3').innerHTML='';$('#jets3').innerHTML='';
+  $('#n3').hidden=true;updCnt();
+  $('#tube').setAttribute('transform','');
+  for(var i=0;i<TOPS.length;i++){
+    var x=160+64*i,top=TOPS[i],g=document.createElementNS(NS,'g');
+    g.setAttribute('class','seg');
+    var h=335-top,html='<rect x="'+x+'" y="'+top+'" width="65" height="'+h+'" rx="7" fill="url(#sandg)"/>';
+    for(var k=0;k<4;k++){var ly=top+34+k*52;if(ly<325)html+='<path d="M'+(x+4)+' '+ly+'H'+(x+61)+'" stroke="#a87634" stroke-opacity=".45" stroke-width="2.5" stroke-linecap="round"/>'}
+    html+='<circle cx="'+(x+18)+'" cy="'+(top+16)+'" r="3" fill="#a87634" opacity=".5"/><circle cx="'+(x+46)+'" cy="'+(top+70)+'" r="4" fill="#a87634" opacity=".4"/>';
+    g.innerHTML=html;segs.appendChild(g);
+  }
+  TARGETS.forEach(function(t,i){
+    var m=document.createElementNS(NS,'g');m.setAttribute('class','mk');m.setAttribute('transform','translate('+t[0]+' '+t[1]+')');
+    m.innerHTML='<circle r="32" fill="transparent"/><circle class="pulse" r="23" fill="none" stroke="#ffd23f" stroke-width="4"/><circle r="22" fill="#ce1126" stroke="#fff" stroke-width="2"/><circle r="14" fill="#fff"/><circle r="7" fill="#ce1126"/>';
+    m.addEventListener('click',function(){fire(i,m)});
+    marks.appendChild(m);
+  });
+}
+function updCnt(){$('#cnt3').textContent='الأهداف: '+ar(S3.hit?S3.hit.size:0)+' من ٦'}
+function fire(i,m){
+  if(S3.done||S3.hit.has(i))return;
+  S3.hit.add(i);updCnt();
+  var tx=TARGETS[i][0],ty=TARGETS[i][1],px=62,py=324;
+  var ang=Math.atan2(ty-py,tx-px);
+  $('#tube').setAttribute('transform','rotate('+(ang*180/Math.PI)+' '+px+' '+py+')');
+  var sx=px+48*Math.cos(ang),sy=py+48*Math.sin(ang);
+  var path=document.createElementNS(NS,'path');
+  path.setAttribute('d','M'+sx+' '+sy+' Q'+((sx+tx)/2)+' '+(Math.min(sy,ty)-45)+' '+tx+' '+ty);
+  path.setAttribute('fill','none');path.setAttribute('stroke','#4fb3ee');path.setAttribute('stroke-width','9');path.setAttribute('stroke-linecap','round');
+  var len=path.getTotalLength?0:0;
+  $('#jets3').appendChild(path);
+  len=path.getTotalLength();
+  path.setAttribute('stroke-dasharray',len);
+  var a=path.animate([{strokeDashoffset:len},{strokeDashoffset:0}],{duration:360,easing:'ease-out',fill:'forwards'});
+  sfx.splash();
+  a.onfinish=function(){
+    splash(tx,ty);
+    var hole=document.createElementNS(NS,'g');hole.setAttribute('transform','translate('+tx+' '+ty+')');
+    hole.innerHTML='<ellipse rx="25" ry="19" fill="#7a5524"/><ellipse rx="17" ry="12" fill="#4a3012"/>';
+    $('#holes3').appendChild(hole);
+    m.style.display='none';
+    path.animate([{opacity:1},{opacity:0}],{duration:260,fill:'forwards'}).onfinish=function(){path.remove()};
+    if(S3.hit.size===6){S3.done=true;setTimeout(collapse,650)}
+  };
+}
+function splash(x,y){
+  for(var k=0;k<9;k++){
+    var c=document.createElementNS(NS,'circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',3+Math.random()*3);c.setAttribute('fill','#9ad7f7');
+    $('#jets3').appendChild(c);
+    var a=Math.random()*Math.PI*2,d=22+Math.random()*26;
+    c.animate([{transform:'translate(0,0)',opacity:1},{transform:'translate('+Math.cos(a)*d+'px,'+(Math.sin(a)*d+10)+'px)',opacity:0}],{duration:520,easing:'ease-out',fill:'forwards'}).onfinish=(function(el){return function(){el.remove()}})(c);
+  }
+}
+async function collapse(){
+  sfx.boom();
+  var segs=document.querySelectorAll('#segs3 .seg');
+  segs.forEach(function(g,i){
+    g.style.transition='transform '+(1+Math.random()*.5)+'s cubic-bezier(.4,0,.9,.5) '+(i*70)+'ms, opacity .6s '+(i*70+700)+'ms';
+    g.style.transform='translateY(270px) rotate('+((Math.random()-.5)*30)+'deg)';
+    g.style.opacity='0';
+  });
+  var hs=$('#holes3');hs.style.transition='opacity .6s';hs.style.opacity='0';
+  for(var k=0;k<14;k++){
+    var c=document.createElementNS(NS,'circle');c.setAttribute('cx',170+Math.random()*430);c.setAttribute('cy',325);c.setAttribute('r',16+Math.random()*16);c.setAttribute('fill','#e8c98a');
+    $('#dust3').appendChild(c);
+    c.style.transformBox='fill-box';c.style.transformOrigin='center';
+    c.animate([{transform:'scale(.3) translateY(0)',opacity:.85},{transform:'scale(2.2) translateY(-30px)',opacity:0}],{duration:1500,delay:k*60,easing:'ease-out',fill:'forwards'});
+  }
+  await sleep(2000);
+  await say('الله أكبر! الساتر وقع! يوم النصر العظيم');
+  $('#n3').hidden=false;
+}
+$('#n3').addEventListener('click',function(){stopSpeech();runS4()});
+
+/* ---------- stage 4: flag ---------- */
+var HF=null;
+function flagStatic(order){
+  return '<svg viewBox="0 0 150 100" aria-hidden="true"><rect width="150" height="34" fill="'+order[0]+'"/><rect y="33" width="150" height="34" fill="'+order[1]+'"/><rect y="66" width="150" height="34" fill="'+order[2]+'"/><use href="#eagle" x="55" y="30" width="40" height="40"/><rect width="150" height="100" fill="none" stroke="#2a1d10" stroke-opacity=".3" stroke-width="2"/></svg>';
+}
+function runS4(){
+  go(4);
+  $('#flags4').hidden=false;$('#hoist4').hidden=true;$('#n4').hidden=true;$('#tip4').hidden=false;
+  var box=$('#flags4');box.innerHTML='';
+  var opts=shuffle([
+    {c:EG,ok:true},
+    {c:['#111111','#ffffff','#ce1126'],ok:false},
+    {c:['#ce1126','#111111','#ffffff'],ok:false}
+  ]);
+  opts.forEach(function(o,i){
+    var b=document.createElement('button');b.type='button';b.className='fb';b.setAttribute('aria-label','علم '+ar(i+1));
+    b.innerHTML=flagStatic(o.c);
+    b.addEventListener('click',function(){
+      if(o.ok)hoist();
+      else{b.classList.add('wrong');sfx.bad();say('لأ، دا مش علم مصر. جرّب تاني');setTimeout(function(){b.classList.remove('wrong')},600)}
+    });
+    box.appendChild(b);
+  });
+  say(LINES[4]+'. العلم بتاعنا الأحمر فوق، والأبيض في النص، والأسود تحت');
+}
+async function hoist(){
+  stopSpeech();
+  $('#flags4').hidden=true;$('#tip4').hidden=true;$('#hoist4').hidden=false;
+  var svg=$('#hflag');
+  if(!HF){HF=mkWave(svg,220,140,EG,10,false)}
+  svg.classList.remove('up');void svg.getBoundingClientRect();
+  await sleep(80);
+  svg.classList.add('up');
+  sfx.rise();
+  await sleep(3700);
+  sfx.fanfare();
+  confetti();
+  await say('تحيا مصر! تحيا مصر!');
+  $('#n4').hidden=false;
+}
+$('#n4').addEventListener('click',function(){stopSpeech();showCert()});
+
+/* ---------- certificate ---------- */
+function confetti(){
+  var box=$('#confetti'),cols=['#ce1126','#ffffff','#111111','#c9a227','#2a86c6','#ff5c8a'];
+  for(var i=0;i<70;i++){
+    var p=document.createElement('i');
+    p.style.left=Math.random()*100+'%';
+    p.style.background=cols[i%cols.length];
+    p.style.animationDuration=(2.5+Math.random()*2.5)+'s';
+    p.style.animationDelay=(Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  setTimeout(function(){box.innerHTML=''},6500);
+}
+function showCert(){
+  $('#certName').textContent=player;
+  go(5);sfx.fanfare();confetti();
+  say('مبروك يا '+player+'! إنت بطل من أبطال أكتوبر');
+}
+$('#again').addEventListener('click',function(){stopSpeech();go(0);$('#name').focus()});
+
+/* ---------- repeat buttons ---------- */
+$('#rep2').addEventListener('click',function(){say(LINES[2]+'. '+$('#bub1').textContent+' '+$('#bub2').textContent)});
+$('#rep3').addEventListener('click',function(){say(LINES[3])});
+$('#rep4').addEventListener('click',function(){say(LINES[4]+'. العلم بتاعنا الأحمر فوق، والأبيض في النص، والأسود تحت')});
+
+async function afterS1Start(){}
+/* stage 2 entry */
+async function runS2Entry(){
+  go(2);initS2();
+  await say(LINES[2]);
+  await say('ساعدني يا بطل أعدّي الناحية التانية');
+}
+function runS2(){runS2Entry()}
+})();
+</script>
+
+</body>
+</html>
